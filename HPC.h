@@ -39,20 +39,19 @@ public:
 
 private slots:
 
-    void on_selectPhoto_clicked();
-
-    void on_match_clicked();
-
-    void on_tree_clicked(const QModelIndex &index);
+    void resizeimage(int height,int width,int treeno);
 
     void on_iconsize_currentIndexChanged(const int &arg1);
 
-    void resizeimage(int height,int width);
+    void on_tree_clicked(const QModelIndex &index);
 
     void exportFile(QString outputFileName);
 
     QString FlannLoop( QString tempAddress , QString sourceAddress );
 
+    void on_tree_2_clicked(const QModelIndex &index);
+
+    void on_match_clicked();
 
 private:
     Ui::HPC *ui;
