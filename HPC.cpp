@@ -3,8 +3,9 @@
 
 QString photoLink = "";
 QString pageLink = "";
-QString photos = "";
-QString dir = "";
+//QString photos = "";
+QList<QString> *dir = new QList<QString>;
+QString currentDir = "";
 int current = 0;
 QFileSystemModel *model = new QFileSystemModel;
 
@@ -25,10 +26,10 @@ HPC::HPC(QWidget *parent) :
     ui->tree->hideColumn(1);
     ui->tree->hideColumn(2);
     ui->tree->hideColumn(3);
-    ui->tree_2->setModel(model);
-    ui->tree_2->hideColumn(1);
-    ui->tree_2->hideColumn(2);
-    ui->tree_2->hideColumn(3);
+    //ui->tree_2->setModel(model);
+    //ui->tree_2->hideColumn(1);
+    //ui->tree_2->hideColumn(2);
+    //ui->tree_2->hideColumn(3);
 }
 
 HPC::~HPC()
@@ -144,7 +145,7 @@ bool FLANN(cv::Mat source, cv::Mat temp)
      std::vector< cv::DMatch > matches;
      matcher.match( descriptorT,descriptorS, matches );
 
-     double max_dist = 0; double min_dist = 25;
+     double max_dist = 0; double min_dist = 35;
 
      //-- Quick calculation of max and min distances between keypoints
      for( int i = 0; i < descriptorT.rows; i++ )
@@ -220,56 +221,74 @@ QString HPC::FlannLoop( QString tempAddress , QString sourceAddress )
 
 void HPC::on_match_clicked()
 {
-    if(photos == "" && dir == "") QMessageBox::information(this,tr("Error"),tr("Album and photos not selected"));
-    else if(photos == "") QMessageBox::information(this,tr("Error"),tr("Photos not selected"));
-    else if(dir == "") QMessageBox::information(this,tr("Error"),tr("Album not selected"));
-
+    //if(photos == "" && dir == "") QMessageBox::information(this,tr("Error"),tr("Album and photos not selected"));
+    //else if(photos == "") QMessageBox::information(this,tr("Error"),tr("Photos not selected"));
+    //else if(dir == "") QMessageBox::information(this,tr("Error"),tr("Album not selected"));
+    int total = 0;
+    int iterations = 1;
+    QList<QFileInfoList> *listFileInfoList = new QList<QFileInfoList>;
     QStandardItemModel *smodel = new QStandardItemModel();
-     QStandardItemModel *smodel2 = new QStandardItemModel();
-    QDir d(photos);
+    QStandardItemModel *smodel2 = new QStandardItemModel();
+    ui->matchProgress->setMaximum(total);
 
-    QStringList filters;
-    filters << "*.png" << "*.jpg" << "*.bmp" << "*.jpeg";
-    QFileInfoList fileInfoList = d.entryInfoList(filters, QDir::Files|QDir::NoDotAndDotDot);
-    ui->matchProgress->setMaximum(fileInfoList.size());
 
-    for(int i = 0; i < fileInfoList.size(); i++)
+    for(int i = 0; i < dir->size(); i++)
     {
-        ui->matchProgress->setValue(i);
-
-        //Do matching algorithm
-        QFileInfo file = fileInfoList.value(i);
-        QString path = file.filePath();
-        QStandardItem *item;
-        QStandardItem *item2;
-        QString index = QString::number(i + 1);
-
-        QString result  = HPC::FlannLoop(path, dir);
-        photoLink = path;
-        pageLink = result;
-        drawBoundingBox(photoLink,pageLink);
-        QImage album_match = cvMatToQImage(match);
-        QImage path_match(path);
-        QSize size(300,300);
-        album_match = album_match.scaled(size,Qt::KeepAspectRatio, Qt::FastTransformation);
-        path_match = path_match.scaled(size,Qt::KeepAspectRatio, Qt::FastTransformation);
-        item = new QStandardItem();
-        item2 = new QStandardItem();
-        item->setData(album_match,Qt::DecorationRole);
-        item->setData(index,Qt::DisplayRole);
-        item2->setData(path_match,Qt::DecorationRole);
-        item2->setData(index,Qt::DisplayRole);
-
-        smodel->appendRow(item);
-        smodel2->appendRow(item2);
-        //ui->matchProgress->update();
-        /*HPC::exportFile(dir+"/testOut.csv");// Current Directory.../HPC-test/build-HPC-Desktop_Qt_5_4_0_clang_64bit-Debug/HPC.app/Contents/MacOS
-        foreach(QString x, dir) QTextStream(stdout)<< x;*/
-        //ui->result->setPixmap(res);
-        //ui->result->show();
-
+        QDir p(dir->value(i) + "/photos");
+        QStringList filters;
+        filters << "*.png" << "*.jpg" << "*.bmp" << "*.jpeg";
+        QFileInfoList fileInfoList = p.entryInfoList(filters, QDir::Files|QDir::NoDotAndDotDot);
+        total = total + fileInfoList.size();
+        listFileInfoList->append(fileInfoList);
     }
-    ui->matchProgress->setValue(fileInfoList.size());
+
+    ui->matchProgress->setMaximum(total);
+
+    for(int i = 0; i < dir->size(); i++)
+    {
+        QString as = dir->value(i) + "/album";
+        QString ps = dir->value(i) + "/photos";
+        QDir a(as);
+        QDir p(ps);
+
+        for(int j = 0; j < listFileInfoList->value(i).size(); j++)
+        {
+            //Do matching algorithm
+            QFileInfo file = listFileInfoList->value(i).value(j);
+            QString path = file.filePath();
+            QStandardItem *item;
+            QStandardItem *item2;
+            QString index = QString::number(iterations);
+
+            QString result  = HPC::FlannLoop(path, as);
+            photoLink = path;
+            pageLink = result;
+            drawBoundingBox(photoLink,pageLink);
+            QImage album_match = cvMatToQImage(match);
+            QImage path_match(path);
+            QSize size(300,300);
+            album_match = album_match.scaled(size,Qt::KeepAspectRatio, Qt::FastTransformation);
+            path_match = path_match.scaled(size,Qt::KeepAspectRatio, Qt::FastTransformation);
+            item = new QStandardItem();
+            item2 = new QStandardItem();
+            item->setData(album_match,Qt::DecorationRole);
+            item->setData(index,Qt::DisplayRole);
+            item->setEditable(false);
+            item2->setData(path_match,Qt::DecorationRole);
+            item2->setData(index,Qt::DisplayRole);
+            item2->setEditable(false);
+
+            smodel->appendRow(item);
+            smodel2->appendRow(item2);
+            //ui->matchProgress->update();
+            /*HPC::exportFile(dir+"/testOut.csv");// Current Directory.../HPC-test/build-HPC-Desktop_Qt_5_4_0_clang_64bit-Debug/HPC.app/Contents/MacOS
+            foreach(QString x, dir) QTextStream(stdout)<< x;*/
+            //ui->result->setPixmap(res);
+            //ui->result->show();
+            ui->matchProgress->setValue(ui->matchProgress->value() + 1);
+            iterations++;
+        }
+    }
     ui->list_2->setModel(smodel);
     ui->list_4->setModel(smodel2);
 
@@ -277,21 +296,21 @@ void HPC::on_match_clicked()
 
 void HPC::on_tree_clicked(const QModelIndex &index)
 {
-    dir = model->filePath(index);
-    current = 0;
+    currentDir = model->filePath(index);
     int index0 = ui->iconsize->currentIndex();
-    if (index0 == 0) resizeimage(50,50,current);
-    if (index0 == 1) resizeimage(75,75,current);
-    if (index0 == 2) resizeimage(100,100,current);
-    if (index0 == 3) resizeimage(150,150,current);
-    if (index0 == 4) resizeimage(200,200,current);
-    if (index0 == 5) resizeimage(300,300,current);
-    if (index0 == 6) resizeimage(500,500,current);
+    if (index0 == 0) resizeimage(50,50);
+    if (index0 == 1) resizeimage(75,75);
+    if (index0 == 2) resizeimage(100,100);
+    if (index0 == 3) resizeimage(150,150);
+    if (index0 == 4) resizeimage(200,200);
+    if (index0 == 5) resizeimage(300,300);
+    if (index0 == 6) resizeimage(500,500);
 
     //std::string utf8_text = S.toStdString();
     //std::cout << utf8_text+"\n";
 }
 
+/*
 void HPC::on_tree_2_clicked(const QModelIndex &index)
 {
     photos = model->filePath(index);
@@ -304,33 +323,25 @@ void HPC::on_tree_2_clicked(const QModelIndex &index)
     if (index0 == 4) resizeimage(200,200,current);
     if (index0 == 5) resizeimage(300,300,current);
     if (index0 == 6) resizeimage(500,500,current);
-}
+}*/
 
 void HPC::on_iconsize_currentIndexChanged(const int &arg1)
 {
-    if (arg1 == 0) resizeimage(50,50,0);
-    if (arg1 == 1) resizeimage(75,75,0);
-    if (arg1 == 2) resizeimage(100,100,0);
-    if (arg1 == 3) resizeimage(150,150,0);
-    if (arg1 == 4) resizeimage(200,200,0);
-    if (arg1 == 5) resizeimage(300,300,0);
-    if (arg1 == 6) resizeimage(500,500,0);
-    if (arg1 == 0) resizeimage(50,50,1);
-    if (arg1 == 1) resizeimage(75,75,1);
-    if (arg1 == 2) resizeimage(100,100,1);
-    if (arg1 == 3) resizeimage(150,150,1);
-    if (arg1 == 4) resizeimage(200,200,1);
-    if (arg1 == 5) resizeimage(300,300,1);
-    if (arg1 == 6) resizeimage(500,500,1);
-
+    if (arg1 == 0) resizeimage(50,50);
+    if (arg1 == 1) resizeimage(75,75);
+    if (arg1 == 2) resizeimage(100,100);
+    if (arg1 == 3) resizeimage(150,150);
+    if (arg1 == 4) resizeimage(200,200);
+    if (arg1 == 5) resizeimage(300,300);
+    if (arg1 == 6) resizeimage(500,500);
 }
 
-void HPC::resizeimage(int height,int width,int treeno)
+void HPC::resizeimage(int height,int width)
 {
     QStandardItemModel *smodel = new QStandardItemModel();
     QDir d;
-    if(treeno == 0) d = QDir(dir);
-    else if(treeno == 1) d = QDir(photos);
+    d = QDir(currentDir);
+
     QStringList filters;
     filters << "*.png" << "*.jpg" << "*.bmp" << "*.jpeg";
     QFileInfoList fileInfoList = d.entryInfoList(filters, QDir::Files|QDir::NoDotAndDotDot);
@@ -350,8 +361,8 @@ void HPC::resizeimage(int height,int width,int treeno)
         item->setEditable(false);
         smodel->appendRow(item);
     }
-    if(treeno == 0) ui->list->setModel(smodel);
-    else if(treeno == 1) ui->list_3->setModel(smodel);
+    ui->list->setModel(smodel);
+    //else if(treeno == 1) ui->list_3->setModel(smodel);
 }
 
 void HPC::exportFile(QString outputFileName){
@@ -367,3 +378,34 @@ void HPC::exportFile(QString outputFileName){
 
 }
 
+
+void HPC::on_tree_doubleClicked(const QModelIndex &index)
+{
+    bool contains = false;
+    int i;
+    for(i = 0; i < dir->size(); i++) {
+        if(dir->value(i) == model->filePath(index)) contains = true;
+    }
+    if(!contains){
+        dir->append(model->filePath(index));
+        displayAlbums();
+    }
+}
+
+void HPC::on_selected_doubleClicked(const QModelIndex &index)
+{
+    dir->removeAt(index.row());
+    displayAlbums();
+}
+
+void HPC::displayAlbums(){
+    QStandardItemModel *smodel = new QStandardItemModel();
+    for(int i = 0; i < dir->size(); i++)
+    {
+        QStandardItem *item = new QStandardItem();
+        item->setData(dir->value(i),Qt::DisplayRole);
+        item->setEditable(false);
+        smodel->appendRow(item);
+    }
+    ui->selected->setModel(smodel);
+}

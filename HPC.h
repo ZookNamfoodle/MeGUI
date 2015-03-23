@@ -39,7 +39,7 @@ public:
 
 private slots:
 
-    void resizeimage(int height,int width,int treeno);
+    void resizeimage(int height,int width);
 
     void on_iconsize_currentIndexChanged(const int &arg1);
 
@@ -49,9 +49,15 @@ private slots:
 
     QString FlannLoop( QString tempAddress , QString sourceAddress );
 
-    void on_tree_2_clicked(const QModelIndex &index);
+    //void on_tree_2_clicked(const QModelIndex &index);
 
     void on_match_clicked();
+
+    void on_tree_doubleClicked(const QModelIndex &index);
+
+    void on_selected_doubleClicked(const QModelIndex &index);
+
+    void displayAlbums();
 
 private:
     Ui::HPC *ui;
