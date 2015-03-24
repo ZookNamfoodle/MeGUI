@@ -16,11 +16,12 @@ int Max;
 Mat match;
 
 
-HPC::HPC(QWidget *parent) :
+HPC::HPC(QWidget *parent) : 
     QMainWindow(parent),
     ui(new Ui::HPC)
 {
     ui->setupUi(this);
+    setWindowIcon(QIcon(":/images/resources/splash.png"));
     model->setRootPath(QDir::currentPath());
     ui->tree->setModel(model);
     ui->tree->hideColumn(1);

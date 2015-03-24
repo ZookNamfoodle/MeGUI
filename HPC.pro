@@ -55,3 +55,6 @@ HEADERS  += \
 
 FORMS    += \
     HPC.ui
+
+RESOURCES += \
+    resources.qrc
