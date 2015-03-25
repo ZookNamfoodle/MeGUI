@@ -340,9 +340,8 @@ void HPC::on_match_clicked()
     ui->output->resizeRowsToContents();
 
     QDir di(":/metadata/resources/testOut.csv");
-    HPC::exportFile(di.absolutePath());
+    HPC::exportFile(":/metadata/resources/testOut.csv");
     importCSV();
-
 }
 
 void HPC::on_tree_clicked(const QModelIndex &index)

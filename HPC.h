@@ -63,6 +63,8 @@ private slots:
 
     void importCSV();
 
+    void on_export_2_clicked();
+
 private:
     Ui::HPC *ui;
 };
