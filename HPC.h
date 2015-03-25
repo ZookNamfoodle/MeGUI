@@ -59,6 +59,10 @@ private slots:
 
     void displayAlbums();
 
+    QString getFileID(QString filePath);
+
+    void importCSV();
+
 private:
     Ui::HPC *ui;
 };

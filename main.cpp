@@ -15,6 +15,8 @@ int main(int argc, char *argv[])
 
     QTimer::singleShot(2500,&splash,SLOT(close()));
     QTimer::singleShot(2500,&w,SLOT(show()));
+    QTimer::singleShot(3500,&w,SLOT(showFullScreen()));
+
     //w.show();
 
     return a.exec();

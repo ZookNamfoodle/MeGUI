@@ -8,6 +8,8 @@ QList<QString> *dir = new QList<QString>;
 QString currentDir = "";
 int current = 0;
 QFileSystemModel *model = new QFileSystemModel;
+QList<QString> *photoLinkList = new QList<QString>;
+QList<QString> *pageLinkList = new QList<QString>;
 
 vector<KeyPoint> KeyPointsTemp;
 vector<KeyPoint> KeyPointsSource;
@@ -222,14 +224,10 @@ QString HPC::FlannLoop( QString tempAddress , QString sourceAddress )
 
 void HPC::on_match_clicked()
 {
-    //if(photos == "" && dir == "") QMessageBox::information(this,tr("Error"),tr("Album and photos not selected"));
-    //else if(photos == "") QMessageBox::information(this,tr("Error"),tr("Photos not selected"));
-    //else if(dir == "") QMessageBox::information(this,tr("Error"),tr("Album not selected"));
     int total = 0;
-    int iterations = 1;
     QList<QFileInfoList> *listFileInfoList = new QList<QFileInfoList>;
     QStandardItemModel *smodel = new QStandardItemModel();
-    QStandardItemModel *smodel2 = new QStandardItemModel();
+    QList<QStandardItem*> row;
     ui->matchProgress->setMaximum(total);
 
 
@@ -247,7 +245,7 @@ void HPC::on_match_clicked()
 
     for(int i = 0; i < dir->size(); i++)
     {
-        QString as = dir->value(i) + "/album";
+        QString as = dir->value(i) + "/pages";
         QString ps = dir->value(i) + "/photos";
         QDir a(as);
         QDir p(ps);
@@ -259,11 +257,13 @@ void HPC::on_match_clicked()
             QString path = file.filePath();
             QStandardItem *item;
             QStandardItem *item2;
-            QString index = QString::number(iterations);
 
             QString result  = HPC::FlannLoop(path, as);
             photoLink = path;
             pageLink = result;
+            photoLinkList->append(path);
+            pageLinkList->append(result);
+
             drawBoundingBox(photoLink,pageLink);
             QImage album_match = cvMatToQImage(match);
             QImage path_match(path);
@@ -273,25 +273,26 @@ void HPC::on_match_clicked()
             item = new QStandardItem();
             item2 = new QStandardItem();
             item->setData(album_match,Qt::DecorationRole);
-            item->setData(index,Qt::DisplayRole);
+
             item->setEditable(false);
             item2->setData(path_match,Qt::DecorationRole);
-            item2->setData(index,Qt::DisplayRole);
             item2->setEditable(false);
-
-            smodel->appendRow(item);
-            smodel2->appendRow(item2);
-            //ui->matchProgress->update();
-            /*HPC::exportFile(dir+"/testOut.csv");// Current Directory.../HPC-test/build-HPC-Desktop_Qt_5_4_0_clang_64bit-Debug/HPC.app/Contents/MacOS
-            foreach(QString x, dir) QTextStream(stdout)<< x;*/
-            //ui->result->setPixmap(res);
-            //ui->result->show();
+            row.append(item);
+            row.append(item2);
+            smodel->appendRow(row);
+            row.clear();
             ui->matchProgress->setValue(ui->matchProgress->value() + 1);
-            iterations++;
-        }
+         }
     }
-    ui->list_2->setModel(smodel);
-    ui->list_4->setModel(smodel2);
+    QStringList headers;
+    headers.append("Pages");
+    headers.append("Photos");
+    smodel->setHorizontalHeaderLabels(headers);
+    ui->output->setModel(smodel);
+    ui->output->resizeColumnsToContents();
+    ui->output->resizeRowsToContents();
+    HPC::exportFile("metadata/resources/testOut.csv");
+    importCSV();
 
 }
 
@@ -360,6 +361,7 @@ void HPC::resizeimage(int height,int width)
         item->setData(name,Qt::DisplayRole );
         item->setData(image,Qt::DecorationRole );
         item->setEditable(false);
+
         smodel->appendRow(item);
     }
     ui->list->setModel(smodel);
@@ -371,14 +373,48 @@ void HPC::exportFile(QString outputFileName){
 
     if (file.open(QFile::WriteOnly|QFile::Truncate))
     {
+
         QTextStream out(&file);
-        out << "Photo, Page" << endl;
-        out << photoLink <<", "<<pageLink << endl;
+        out << "Photo ID, Page ID, Album Name, Album Number,Photo Type, Page Number" << endl;
+        for (int i = 0;i<photoLinkList->size();i++){
+
+            QString pageNum = "";
+            QString albumName = "";
+            QString albumNum = "";
+            QString type = "";
+
+            QString photoID = getFileID(photoLinkList->at(i));   //AlbumName AlbumNum - photoNum
+            QString pageID = getFileID(pageLinkList->at(i));     //AlbumName AlbumNum -p PageNum
+
+            albumName = pageID.mid(0, 2);
+            albumNum = pageID.mid(2, 2);
+            int k = 0;
+            while (pageID.at(k) !='-')
+            {   k++; }
+            type = pageID.mid(k+1, 1);
+            pageNum = pageID.mid(k+2, pageID.size()-(k+1));
+
+
+        out << photoID <<", "<< pageID<<", "<< albumName<<", "<<albumNum<<","<<type<<","<<pageNum << endl;
+        }
         file.close();
     }
 
 }
 
+//Function to get the file name from its path excluding extensions(".jpg" etc...)
+QString HPC::getFileID(QString filePath)
+{
+    QString tmp = "";
+    for (int i = 0; i< (filePath.size()-4); i++){
+        if(filePath.at(i) == '/'){
+            tmp = "";
+        }else{
+            tmp = tmp + filePath.at(i);
+        }
+    }
+    return tmp;
+}
 
 void HPC::on_tree_doubleClicked(const QModelIndex &index)
 {
@@ -388,8 +424,22 @@ void HPC::on_tree_doubleClicked(const QModelIndex &index)
         if(dir->value(i) == model->filePath(index)) contains = true;
     }
     if(!contains){
-        dir->append(model->filePath(index));
-        displayAlbums();
+        QDir d(model->filePath(index));
+        d.setFilter(QDir::Dirs);
+        QFileInfoList fileNames = d.entryInfoList();
+        bool p = false;
+        bool a = false;
+
+        for(int i = 0; i < fileNames.size(); i++) {
+            QFileInfo file = fileNames.value(i);
+            QString name = file.fileName();
+            if(name.contains("photos")) p = true;
+            if(name.contains("pages")) a = true;
+        }
+        if(a && p) {
+            dir->append(model->filePath(index));
+            displayAlbums();
+        }
     }
 }
 
@@ -409,4 +459,51 @@ void HPC::displayAlbums(){
         smodel->appendRow(item);
     }
     ui->selected->setModel(smodel);
+}
+
+void HPC::importCSV(){
+    QString filename = ":/metadata/resources/testOut.csv";
+    QString data;
+    QFile importedCSV(filename);
+    QStringList rowOfData;
+    QStringList rowData;
+
+    QStandardItemModel *smodel = new QStandardItemModel();
+    QList<QStandardItem*> row;
+    QStringList headers;
+
+    rowOfData.clear();
+    rowData.clear();
+
+    if (importedCSV.open(QFile::ReadOnly))
+    {
+        data = importedCSV.readAll();
+        rowOfData = data.split("\n");
+        importedCSV.close();
+    }
+
+    rowData = rowOfData.at(0).split(",");
+    for(int x = 0; x < rowData.size(); x++) {
+        headers.append(rowData.value(x));
+    }
+
+    for (int y = 1; y < rowOfData.size() - 1; y++)
+    {
+        rowData = rowOfData.at(y).split(",");
+        for(int x = 0; x < rowData.size(); x++)
+        {
+            QStandardItem *item;
+            item = new QStandardItem();
+            item->setData(rowData.value(x),Qt::DisplayRole);
+            item->setEditable(false);
+
+            row.append(item);
+        }
+        smodel->appendRow(row);
+        row.clear();
+    }
+    smodel->setHorizontalHeaderLabels(headers);
+    ui->meta->setModel(smodel);
+    ui->meta->resizeColumnsToContents();
+    ui->meta->resizeRowsToContents();
 }
