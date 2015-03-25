@@ -11,6 +11,8 @@ QFileSystemModel *model = new QFileSystemModel;
 QList<QString> *photoLinkList = new QList<QString>;
 QList<QString> *pageLinkList = new QList<QString>;
 
+QStringList rowOfData;
+
 vector<KeyPoint> KeyPointsTemp;
 vector<KeyPoint> KeyPointsSource;
 vector<DMatch> GoodMatches;
@@ -339,10 +341,7 @@ void HPC::on_match_clicked()
     ui->output->resizeColumnsToContents();
     ui->output->resizeRowsToContents();
 
-    QDir di(":/metadata/resources/testOut.csv");
-    HPC::exportFile(di.absolutePath());
-    importCSV();
-
+    HPC::exportFile();
 }
 
 void HPC::on_tree_clicked(const QModelIndex &index)
@@ -417,37 +416,56 @@ void HPC::resizeimage(int height,int width)
     //else if(treeno == 1) ui->list_3->setModel(smodel);
 }
 
-void HPC::exportFile(QString outputFileName){
-    QFile file(outputFileName);
+void HPC::exportFile(){
 
-    if (file.open(QFile::WriteOnly|QFile::Truncate))
-    {
+    rowOfData.clear();
 
-        QTextStream out(&file);
-        out << "Photo ID, Page ID, Album Name, Album Number,Photo Type, Page Number" << endl;
-        for (int i = 0;i<photoLinkList->size();i++){
+    QStringList headers;
+    QList<QStandardItem*> row;
 
-            QString pageNum = "";
-            QString albumName = "";
-            QString albumNum = "";
-            QString type = "";
+    QStringList rowData;
+    QStandardItemModel *smodel = new QStandardItemModel();
 
-            QString photoID = getFileID(photoLinkList->at(i));   //AlbumName AlbumNum - photoNum
-            QString pageID = getFileID(pageLinkList->at(i));     //AlbumName AlbumNum -p PageNum
+    QString header = "Photo ID,Page ID,Album Name,Album Number,Photo Type,Page Number";
+    rowOfData.append(header);
+    headers = rowOfData.at(0).split(",");
 
-            albumName = pageID.mid(0, 2);
-            albumNum = pageID.mid(2, 2);
-            int k = 0;
-            while (pageID.at(k) !='-')
-            {   k++; }
-            type = pageID.mid(k+1, 1);
-            pageNum = pageID.mid(k+2, pageID.size()-(k+1));
+    for (int i = 0;i<photoLinkList->size();i++){
+        QString pageNum = "";
+        QString albumName = "";
+        QString albumNum = "";
+        QString type = "";
 
+        QString photoID = getFileID(photoLinkList->at(i));   //AlbumName AlbumNum - photoNum
+        QString pageID = getFileID(pageLinkList->at(i));     //AlbumName AlbumNum -p PageNum
 
-        out << photoID <<", "<< pageID<<", "<< albumName<<", "<<albumNum<<","<<type<<","<<pageNum << endl;
+        albumName = pageID.mid(0, 2);
+        albumNum = pageID.mid(2, 2);
+        int k = 0;
+        while (pageID.at(k) !='-')
+        {   k++; }
+        type = pageID.mid(k+1, 1);
+        pageNum = pageID.mid(k+2, pageID.size()-(k+1));
+
+        QString str = photoID +","+pageID +","+albumName +","+albumNum +","+type +","+pageNum;
+        rowOfData.append(str);
+        rowData  = str.split(",");
+
+        for (int y = 0; y < rowData.size(); y++)
+        {
+            QStandardItem *item=new QStandardItem();
+            item->setData(rowData.value(y),Qt::DisplayRole);
+            item->setEditable(false);
+            row.append(item);
         }
-        file.close();
+        smodel->appendRow(row);
+        row.clear();
+        rowData.clear();
     }
+    smodel->setHorizontalHeaderLabels(headers);
+    ui->meta->setModel(smodel);
+    ui->meta->resizeColumnsToContents();
+    ui->meta->resizeRowsToContents();
 
 }
 
@@ -514,25 +532,12 @@ void HPC::displayAlbums(){
 }
 
 void HPC::importCSV(){
-    QString filename = ":/metadata/resources/testOut.csv";
-    QString data;
-    QFile importedCSV(filename);
-    QStringList rowOfData;
+
     QStringList rowData;
 
     QStandardItemModel *smodel = new QStandardItemModel();
     QList<QStandardItem*> row;
     QStringList headers;
-
-    rowOfData.clear();
-    rowData.clear();
-
-    if (importedCSV.open(QFile::ReadOnly))
-    {
-        data = importedCSV.readAll();
-        rowOfData = data.split("\n");
-        importedCSV.close();
-    }
 
     rowData = rowOfData.at(0).split(",");
     for(int x = 0; x < rowData.size(); x++) {
@@ -562,19 +567,6 @@ void HPC::importCSV(){
 
 void HPC::on_export_2_clicked()
 {
-    QString filename = ":/metadata/resources/testOut.csv";
-    QString data;
-    QFile importedCSV(filename);
-    QStringList rowOfData;
-
-    if (importedCSV.open(QFile::ReadOnly))
-    {
-        data = importedCSV.readAll();
-        rowOfData = data.split("\n");
-        importedCSV.close();
-    }
-
-
     QString fileName = QFileDialog::getSaveFileName(this,tr("Save Document"),QDir::currentPath(),tr("Documents (*.csv)"));
     fileName = fileName + ".csv";
     QFile f(fileName);

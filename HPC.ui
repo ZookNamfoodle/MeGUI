@@ -623,6 +623,19 @@
        <string>Folder contents:</string>
       </property>
      </widget>
+     <widget class="QLabel" name="album_2">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>30</y>
+        <width>121</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Selected Albums:</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="match_tab">
      <attribute name="title">
@@ -705,7 +718,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Export</string>
+       <string>Export CSV</string>
       </property>
      </widget>
     </widget>

@@ -45,7 +45,7 @@ private slots:
 
     void on_tree_clicked(const QModelIndex &index);
 
-    void exportFile(QString outputFileName);
+    void exportFile();
 
     QString FlannLoop( QString tempAddress , QString sourceAddress );
 
