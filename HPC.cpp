@@ -524,7 +524,10 @@ void HPC::displayAlbums(){
     for(int i = 0; i < dir->size(); i++)
     {
         QStandardItem *item = new QStandardItem();
-        item->setData(dir->value(i),Qt::DisplayRole);
+        QDir di = dir->value(i);
+        QString name = di.dirName();
+        item->setData(name,Qt::DisplayRole);
+        item->setTextAlignment(Qt::AlignHCenter);
         item->setEditable(false);
         smodel->appendRow(item);
     }

@@ -17,6 +17,8 @@ INCLUDEPATH += /opt/local/include/opencv
 CONFIG += c++11
 QMAKE_CXXFLAGS += -std=c++11
 
+
+
 LIBS += -L/opt/local/lib
 LIBS += -lopencv_calib3d \
 -lopencv_contrib \

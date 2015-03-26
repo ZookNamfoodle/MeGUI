@@ -2,7 +2,4 @@
     <qresource prefix="/images">
         <file>resources/splash.png</file>
     </qresource>
-    <qresource prefix="/metadata">
-        <file>resources/testOut.csv</file>
-    </qresource>
 </RCC>

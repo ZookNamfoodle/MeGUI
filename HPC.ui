@@ -35,6 +35,73 @@
   <property name="windowOpacity">
    <double>1.000000000000000</double>
   </property>
+  <property name="styleSheet">
+   <string notr="true">#centralWidget{
+	
+background:QLinearGradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #eef, stop: 1 #ccf);
+}
+
+#select{
+background:QLinearGradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #eef, stop: 1 #ccf);
+}
+
+#match_tab{
+background:QLinearGradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #eef, stop: 1 #ccf);
+}
+
+#tree{
+border: 3px solid gray;
+border-radius: 20px;
+background: white;
+}
+
+#list{
+border: 3px solid gray;
+border-radius: 10px;
+background: white;
+}
+
+#selected{
+border: 3px solid gray;
+border-radius: 20px;
+background: white;
+}
+
+#output{
+border: 3px solid gray;
+border-radius: 20px;
+background: white;
+}
+
+#meta{
+border: 3px solid gray;
+border-radius: 5px;
+background: white;
+}
+
+QPushButton {
+color: black;
+background-color: white;
+border: 3px solid gray;
+border-style: solid;
+border-radius: 7;
+padding: 3px;
+font-size: 11px;
+font:bold;
+padding-left: 5px;
+padding-right: 5px;
+min-width: 60px;
+max-width: 60px;
+min-height: 20px;
+max-height: 20px;
+}
+
+QLabel {
+font-weight: bold;
+font-size: 15px;
+}
+</string>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QTabWidget" name="tabs">
     <property name="geometry">
@@ -49,7 +116,7 @@
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="select">
      <attribute name="title">
@@ -90,53 +157,48 @@
      <widget class="QComboBox" name="iconsize">
       <property name="geometry">
        <rect>
-        <x>1210</x>
+        <x>1180</x>
         <y>20</y>
-        <width>85</width>
+        <width>111</width>
         <height>27</height>
        </rect>
       </property>
       <property name="currentText">
-       <string>xxs</string>
+       <string>Extra Small</string>
       </property>
       <item>
        <property name="text">
-        <string>xxs</string>
+        <string>Extra Small</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>xs</string>
+        <string>Vey Small</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>s</string>
+        <string>Small</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>m</string>
+        <string>Medium</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>l</string>
+        <string>Large</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>xl</string>
+        <string>Very Large</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>xxl</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string/>
+        <string>Extra Large</string>
        </property>
       </item>
      </widget>
@@ -574,9 +636,9 @@
      <widget class="QLabel" name="sizeLabel">
       <property name="geometry">
        <rect>
-        <x>1140</x>
+        <x>1106</x>
         <y>20</y>
-        <width>67</width>
+        <width>71</width>
         <height>31</height>
        </rect>
       </property>
@@ -590,7 +652,7 @@
      <widget class="QLabel" name="album">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>20</x>
         <y>30</y>
         <width>101</width>
         <height>17</height>
@@ -605,7 +667,7 @@
        <rect>
         <x>340</x>
         <y>50</y>
-        <width>291</width>
+        <width>201</width>
         <height>591</height>
        </rect>
       </property>
@@ -626,9 +688,9 @@
      <widget class="QLabel" name="album_2">
       <property name="geometry">
        <rect>
-        <x>340</x>
+        <x>350</x>
         <y>30</y>
-        <width>121</width>
+        <width>131</width>
         <height>17</height>
        </rect>
       </property>
@@ -645,10 +707,15 @@
       <property name="geometry">
        <rect>
         <x>710</x>
-        <y>8</y>
-        <width>121</width>
-        <height>31</height>
+        <y>6</y>
+        <width>76</width>
+        <height>32</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">
+#
+qconicalgradient(cx:0.5, cy:0.5, angle:0, stop:0 rgba(35, 40, 3, 255), stop:0.16 rgba(136, 106, 22, 255), stop:0.225 rgba(166, 140, 41, 255), stop:0.285 rgba(204, 181, 74, 255), stop:0.345 rgba(235, 219, 102, 255), stop:0.415 rgba(245, 236, 112, 255), stop:0.52 rgba(209, 190, 76, 255), stop:0.57 rgba(187, 156, 51, 255), stop:0.635 rgba(168, 142, 42, 255), stop:0.695 rgba(202, 174, 68, 255), stop:0.75 rgba(218, 202, 86, 255), stop:0.815 rgba(208, 187, 73, 255), stop:0.88 rgba(187, 156, 51, 255), stop:0.935 rgba(137, 108, 26, 255), stop:1 rgba(35, 40, 3, 255))</string>
       </property>
       <property name="text">
        <string>Match</string>
@@ -711,10 +778,10 @@
      <widget class="QPushButton" name="export_2">
       <property name="geometry">
        <rect>
-        <x>835</x>
-        <y>8</y>
-        <width>121</width>
-        <height>31</height>
+        <x>790</x>
+        <y>6</y>
+        <width>76</width>
+        <height>32</height>
        </rect>
       </property>
       <property name="text">
